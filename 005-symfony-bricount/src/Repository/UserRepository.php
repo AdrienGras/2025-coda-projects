@@ -3,6 +3,8 @@
 namespace App\Repository;
 
 use App\Entity\User;
+use App\Entity\Wallet;
+use App\Entity\XUserWallet;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Component\Security\Core\Exception\UnsupportedUserException;
@@ -33,28 +35,28 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
         $this->getEntityManager()->flush();
     }
 
-    //    /**
-    //     * @return User[] Returns an array of User objects
-    //     */
-    //    public function findByExampleField($value): array
-    //    {
-    //        return $this->createQueryBuilder('u')
-    //            ->andWhere('u.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->orderBy('u.id', 'ASC')
-    //            ->setMaxResults(10)
-    //            ->getQuery()
-    //            ->getResult()
-    //        ;
-    //    }
+    public function findAvailableUsersForWallet(Wallet $wallet): array {
+        $xUserWallets =
+            $this
+                ->createQueryBuilder("a")
+                ->select("xuw")
+                ->from(XUserWallet::class, "xuw")
+                ->andWhere("xuw.wallet = :wallet")
+                ->andWhere("xuw.isDeleted = false")
+                ->setParameter('wallet', $wallet)
+                ->getQuery()
+                ->getResult();
 
-    //    public function findOneBySomeField($value): ?User
-    //    {
-    //        return $this->createQueryBuilder('u')
-    //            ->andWhere('u.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->getQuery()
-    //            ->getOneOrNullResult()
-    //        ;
-    //    }
+        $alreadyInUsers = [];
+        foreach ($xUserWallets as $xUserWallet) {
+            $alreadyInUsers[] = $xUserWallet->getTargetUser();
+        }
+
+        return $this
+            ->createQueryBuilder('u')
+            ->where('u.id NOT IN (:alreadyInUsers)')
+            ->setParameter('alreadyInUsers', $alreadyInUsers)
+            ->getQuery()
+            ->getResult();
+    }
 }

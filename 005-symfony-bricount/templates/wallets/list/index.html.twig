@@ -3,13 +3,35 @@
 {% block title %}Liste des portefeuilles - Bricount{% endblock %}
 
 {% block content %}
-    <h1>Liste des portefeuilles</h1>
+    <div class="row mb-3 align-items-center">
+        <div class="col-md-6 p-2">
+            <h1>Liste des portefeuilles</h1>
+        </div>
+        <div class="col-md-6 text-end p-2 text-bold">
+            <a
+                href="{{ path('wallets_create') }}"
+                class="btn btn-success"
+            >
+                + Ajouter
+            </a>
+        </div>
+    </div>
 
-    <ul>
-    {% for wallet in wallets %}
-        <li>
-            <a href="{{ path('wallets_show', {'uid': wallet.uid}) }}">{{ wallet.label }}</a>
-        </li>
-    {% endfor %}
-    </ul>
+    <div class="mt-3">
+        {% for wallet in wallets %}
+            <div class="row mb-3 shadow-sm border align-items-center">
+                <div class="col-md-6 p-2 fs-5">
+                    {{ wallet.label }}
+                </div>
+                <div class="col-md-2 p-2 text-muted">
+                    {{ wallet.totalAmount }} EUR
+                </div>
+                <div class="col-md-4 text-end p-2 text-bold">
+                    <a href="{{ path('wallets_show', {'uid': wallet.uid}) }}" class="btn btn-primary">→</a>
+                    <a href="{{ path('wallets_edit', {'uid': wallet.uid}) }}" class="btn btn-secondary">✎</a>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+
 {% endblock %}
